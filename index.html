@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetaMask Onboarding</title>
+    <script type="module">
+        import MetaMaskOnboarding from 'https://cdn.jsdelivr.net/npm/@metamask/onboarding@1.0.1/dist/metamask-onboarding.min.js';
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const player = document.querySelector(".success-anim");
+            const btn = document.querySelector('.onboard');
+            const statusText = document.querySelector('h1');
+            const statusDesc = document.querySelector('.desc');
+            const loader = document.querySelector('.loader');
+            const upArrow = document.querySelector('.up');
+            const confetti = document.querySelector('.confetti');
+
+            const onboarding = new MetaMaskOnboarding();
+
+            const isMetaMaskInstalled = () => {
+                const { ethereum } = window;
+                return Boolean(ethereum && ethereum.isMetaMask);
+            };
+
+            const connected = (accounts) => {
+                statusText.textContent = 'Connected!';
+                statusDesc.classList.add('account');
+                statusDesc.textContent = accounts[0];
+                btn.style.display = 'none';
+                loader.style.display = 'none';
+                upArrow.style.display = 'none';
+                confetti.style.display = 'block';
+                player.play();
+            };
+
+            async function connectWallet() {
+                return await window.ethereum.request({ method: 'eth_accounts' });
+            }
+
+            const onClickInstallMetaMask = () => {
+                onboarding.startOnboarding();
+                loader.style.display = 'block';
+            };
+
+            btn.addEventListener('click', async () => {
+                btn.style.backgroundColor = '#cccccc';
+                loader.style.display = 'block';
+
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    connected(accounts);
+                } catch (error) {
+                    console.error(error);
+                    statusDesc.textContent = 'Failed to connect wallet. Please try again.';
+                } finally {
+                    loader.style.display = 'none';
+                }
+            });
+
+            const MetaMaskClientCheck = () => {
+                if (!isMetaMaskInstalled()) {
+                    statusText.textContent = 'You need to Install a Wallet';
+                    statusDesc.textContent = 'We recommend the MetaMask wallet.';
+                    btn.textContent = 'Install MetaMask';
+                    btn.onclick = onClickInstallMetaMask;
+                } else {
+                    connectWallet().then((accounts) => {
+                        if (accounts && accounts.length > 0) {
+                            connected(accounts);
+                        } else {
+                            statusText.textContent = 'Connect your wallet';
+                            statusDesc.textContent = 'To begin, please connect your MetaMask wallet.';
+                            btn.textContent = 'Connect MetaMask';
+                            upArrow.style.display = 'block';
+                        }
+                    });
+                }
+            };
+
+            MetaMaskClientCheck();
+        });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .onboard-container {
+            padding: 20px;
+            margin-top: 50px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .desc {
+            font-size: 18px;
+            color: #555;
+        }
+        .loader, .up, .confetti {
+            display: none;
+            margin: 20px auto;
+            max-width: 200px;
+        }
+        .onboard {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            color: white;
+            background-color: #007bff;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .onboard:hover {
+            background-color: #0056b3;
+        }
+        .account {
+            font-weight: bold;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="onboard-container">
+        <div class="loader">
+            <lottie-player src="https://assets2.lottiefiles.com/private_files/lf30_lndg7fhf.json" 
+                           background="transparent" speed="1" loop autoplay></lottie-player>
+        </div>
+        <div class="up">
+            <lottie-player src="https://assets3.lottiefiles.com/packages/lf20_kfzgxkvq.json" 
+                           background="transparent" speed="1" loop autoplay></lottie-player>
+        </div>
+        <div class="confetti">
+            <lottie-player class="success-anim" src="https://assets10.lottiefiles.com/packages/lf20_rovf9gzu.json" 
+                           background="transparent" speed="1"></lottie-player>
+        </div>
+        <h1></h1>
+        <p class="desc"></p>
+        <a class="onboard">Connect Wallet</a>
+    </div>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+</body>
+</html>
